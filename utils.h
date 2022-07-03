@@ -9,6 +9,9 @@
 #include <cstring>
 #include <algorithm>
 #include <map>
+#include <fstream>
+#include <ctime>
+#include <sstream>
 
 #include "utils.h"
 #include "types.h"
@@ -28,7 +31,7 @@ void clear();
 bool isNumber(const char& ch);
 
 /**
- * validateCode evaluates a given code if it is follows the criteria that a guess code must have: <br />
+ * validateCode evaluates a given code if it follows the criteria that a guess code must have: <br />
  * - each character is a number digit; and <br />
  * - each digit is unique from other digits.
  * @param code - an array of 4 characters
@@ -84,5 +87,20 @@ string printResult(map<string, int>& result);
  * @returns otherwise, <strong>false</strong>
  */
 bool hasGuessedSecretCode(const Code& guessCode, const Code& secretCode);
+
+/**
+ * saveGameResult creates an output file that contains the entire log of its game session
+ * @param player1 - a target Player (user)
+ * @param player2 - a target Player (computer)
+ */
+void saveGameResult(Player& player1, Player& player2);
+
+/**
+ * initGame initializes the game.
+ * @param user - the user player.
+ * @param comp - the comp player.
+ * @param modeOfPlay - how to play the game
+ */
+void initGame(Player& user, Player& comp, ModeOfPlay modeOfPlay);
 
 #endif //DSAFO_UTILS_H
