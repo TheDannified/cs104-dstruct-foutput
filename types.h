@@ -22,15 +22,16 @@ enum Commands {
     EXIT = 'X'
 };
 
+enum ModeOfPlay {
+    MANUAL = 'X',
+    AUTOMATIC = 'C'
+};
+
 struct Player {
     Code secretCode;
     vector<Code> guesses;
     bool isWinner;
 };
 
-struct Result {
-    short bulls;
-    short cows;
-};
 
 #endif //DSAFO_TYPES_H
