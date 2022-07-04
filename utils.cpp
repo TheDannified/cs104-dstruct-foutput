@@ -20,12 +20,12 @@ bool isNumber(const char& ch)
 // GOOD TO GO!
 bool validateCode(Code& code)
 {
-    map<char, int> digits;
+    map<char, int> digits; // frequency
 
     if (code.length() == MAX_CODE_LENGTH) {
         for (char ch: code) {
             if (isNumber(ch)) { // Check if the character being checked is a number.
-                if (++digits[ch] == 2) // If the
+                if (++digits[ch] == 2)
                     return false; // if there's a digit that has a duplicate
             }
             else return false; // if a non-numerical character was found.
@@ -37,7 +37,22 @@ bool validateCode(Code& code)
 }
 
 // GOOD TO GO!
-Code generateCode(Difficulty difficulty, Player& player) {
+string getDifficulty(Difficulty difficulty)
+{
+    switch (difficulty)
+    {
+        case EASY:
+            return "EASY";
+        case MEDIUM:
+            return "MEDIUM";
+        default:
+            return "";
+    }
+}
+
+// GOOD TO GO!
+Code generateCode(Player& player)
+{
     string digits;
     string result;
 
@@ -50,12 +65,32 @@ Code generateCode(Difficulty difficulty, Player& player) {
             result.append(1, digits.at(randIndex));
             digits.erase(remove(digits.begin(), digits.end(), digits.at(randIndex)), digits.end());
         }
-    } while (find(player.guesses.begin(), player.guesses.end(), result) != player.guesses.end());
+    } while (hasPlayerUsedGuessCode(player, result));
 
     return result;
 }
 
 // IN DEVELOPMENT
+Code generateCode(Player& player, Code& secretCode)
+{
+    string digits;
+    string result = "****";
+
+    srand(time(0));
+    do {
+        result.clear();
+        digits = "0123456789";
+        for (int i = 0; i < MAX_CODE_LENGTH; i++) {
+            int randIndex = rand() % digits.length();
+            result.append(1, digits.at(randIndex));
+            digits.erase(remove(digits.begin(), digits.end(), digits.at(randIndex)), digits.end());
+        }
+    } while (hasPlayerUsedGuessCode(player, result));
+
+    return result;
+}
+
+// GOOD TO GO!
 map<string, int> evaluateCode(const Code& guessCode, const Code& secretCode)
 {
     map<string, int> result;
@@ -79,7 +114,7 @@ map<string, int> evaluateCode(const Code& guessCode, const Code& secretCode)
     return result;
 }
 
-// IN DEVELOPMENT
+// GOOD TO GO!
 void promptSecretCode(Player& player)
 {
     string userCode;
@@ -101,7 +136,7 @@ void promptSecretCode(Player& player)
     } while (userCode.length() != 4 || !validateCode(userCode));
 }
 
-// IN DEVELOPMENT
+// GOOD TO GO!
 void promptGuessCode(Player& player)
 {
     string userCode;
@@ -121,7 +156,7 @@ void promptGuessCode(Player& player)
         else if (!validateCode(userCode))
             cerr << "[ERROR] Given code is invalid. Please provide a code that has 4 distinct number code." << endl;
         // IF THE USER ALREADY USED THE GIVEN CODE FROM THEIR PREVIOUS ATTEMPTS
-        else if (find(player.guesses.begin(), player.guesses.end(), userCode) != player.guesses.end()) {
+        else if (hasPlayerUsedGuessCode(player, userCode)) {
             cerr << "[ERROR] You have guessed this code from your previous attempts. Please provide another unique code." << endl;
             userCode = "";
         }
@@ -153,8 +188,14 @@ bool hasGuessedSecretCode(const Code& guessCode, const Code& secretCode)
     return false;
 }
 
-// IN DEVELOPMENT
-void saveGameResult(Player& player1, Player& player2) {
+// GOOD TO GO
+bool hasPlayerUsedGuessCode(Player& player, Code& guessCode)
+{
+    return find(player.guesses.begin(), player.guesses.end(), guessCode) != player.guesses.end();
+}
+
+// GOOD TO GO
+void saveGameResult(Player& player1, Player& player2, Difficulty difficulty) {
     time_t dateTime = time(nullptr);        // time object for file name
     stringstream fileName;  // stores the initial name of our log file
     ofstream logFile;       // output stream object for the log file
@@ -174,8 +215,9 @@ void saveGameResult(Player& player1, Player& player2) {
     logFile.open(fileName.str(), fstream::out);
 
     if (logFile.is_open() && !logFile.fail()) {
-        logFile << "***************** GAME   SUMMARY ****************" << endl;
+        logFile << "****************** GAME   SUMMARY *****************" << endl;
         logFile << "DATE OF GAME SESSION: " << ctime(&dateTime);
+        logFile << "DIFFICULTY MODE: " << getDifficulty(difficulty) << endl;
         logFile << "GAME WINNER: " << gameWinner << endl;
         logFile << "***************************************************" << endl << endl;
 
@@ -195,7 +237,7 @@ void saveGameResult(Player& player1, Player& player2) {
 }
 
 // IN DEVELOPMENT
-void initGame(Player& user, Player& comp, ModeOfPlay modeOfPlay)
+void initGame(Player& user, Player& comp, Difficulty difficulty, ModeOfPlay modeOfPlay)
 {
     fstream usrGuessesFile;     // fstream object that is responsible for handling our external (text) file
     stringstream UGF_fileName;  // stringstream object that stores the name of the usrGuessesFile (UGF)
@@ -232,7 +274,7 @@ void initGame(Player& user, Player& comp, ModeOfPlay modeOfPlay)
         cout << "USER'S RESULT: " << printResult(result) << endl;
 
         // Generate a code for the computer.
-        compGuess = generateCode(EASY, comp);
+        compGuess = generateCode(comp);
         comp.guesses.push_back(compGuess);
         result = evaluateCode(compGuess, user.secretCode);
         cout << "COMPUTER GUESS: " << compGuess << endl;
@@ -293,5 +335,19 @@ void initGame(Player& user, Player& comp, ModeOfPlay modeOfPlay)
         cout << "*************************************************" << endl;
     }
 
-    saveGameResult(user, comp);
+    saveGameResult(user, comp, difficulty);
+}
+
+// GOOD TO GO
+bool isBull(Code& guessCode, Code& secretCode, char ch)
+{
+    // Character being searched on both code exists and are in the same index.
+    return guessCode.find(ch) == secretCode.find(ch);
+}
+
+// GOOD TO GO!
+bool isCow(Code& guessCode, Code& secretCode, char ch)
+{
+    // Character being searched on both codes exists, and they are from different indexes.
+    return (guessCode.find(ch) != -1ULL && secretCode.find(ch) != -1ULL) && (guessCode.find(ch) != secretCode.find(ch));
 }

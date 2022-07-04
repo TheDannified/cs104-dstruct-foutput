@@ -40,12 +40,29 @@ bool isNumber(const char& ch);
 bool validateCode(Code &code);
 
 /**
+ * getDifficulty returns...
+ * @param difficulty
+ * @return a string version of a Difficulty
+ */
+string getDifficulty(Difficulty difficulty);
+
+/**
  * generateCode returns a 4-character string of Code type.
- * @param difficulty - the chosen difficulty of the player
  * @param player - the target player
  * @return a string of generated Code
  */
-Code generateCode(Difficulty difficulty, Player& player);
+// FOR EASY MODE
+Code generateCode(Player& player);
+
+/**
+ * generateCode returns a 4-character string of Code type.
+ * This overloaded function is specifically designed for Medium AI.
+ * @param player - the target player
+ * @param secretCode - given secret code
+ * @return a string of generated Code
+ */
+// FOR MEDIUM MODE
+Code generateCode(Player& player, Code& secretCode);
 
 /**
  * evaluateCode evaluates a guessCode how many bulls and cows were found
@@ -89,11 +106,19 @@ string printResult(map<string, int>& result);
 bool hasGuessedSecretCode(const Code& guessCode, const Code& secretCode);
 
 /**
+ * hasPlayerUsedGuessCode checks if the player has already used the guess code they provided
+ * @param player - the target player
+ * @param guessCode - the given guess code
+ * @return <strong>true</strong> if the code is already guessed by the user. Otherwise, <strong>false</strong>.
+ */
+bool hasPlayerUsedGuessCode(Player& player, Code& guessCode);
+
+/**
  * saveGameResult creates an output file that contains the entire log of its game session
  * @param player1 - a target Player (user)
  * @param player2 - a target Player (computer)
  */
-void saveGameResult(Player& player1, Player& player2);
+void saveGameResult(Player& player1, Player& player2, Difficulty difficulty);
 
 /**
  * initGame initializes the game.
@@ -101,6 +126,26 @@ void saveGameResult(Player& player1, Player& player2);
  * @param comp - the comp player.
  * @param modeOfPlay - how to play the game
  */
-void initGame(Player& user, Player& comp, ModeOfPlay modeOfPlay);
+void initGame(Player& user, Player& comp, Difficulty difficulty, ModeOfPlay modeOfPlay);
+
+/**
+ * isBull checks if the position of a digit from the guessCode is exactly the same
+ * as the position of that digit from the secretCode
+ * @param ch - a number digit character
+ * @param guessCode - a player's guess code
+ * @param secretCode - player opponent's secret code
+ * @return
+ */
+bool isBull(Code& guessCode, Code& secretCode, char ch);
+
+/**
+ * isCow checks if a digit from both guessCode and secretCode does exist
+ * but are different in indexes from each given codes.
+ * @param ch - a number digit character
+ * @param guessCode - a player's guess code
+ * @param secretCode - player opponent's secret code
+ * @return
+ */
+bool isCow(Code& guessCode, Code& secretCode, char ch);
 
 #endif //DSAFO_UTILS_H
