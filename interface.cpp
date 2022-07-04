@@ -10,7 +10,7 @@ void uiMainMenu() {
     cout << endl << "COMMAND: ";
 }
 
-// IN DEVELOPMENT
+// GOOD TO GO!
 void uiEasyMode() {
     Player user;    // User player object.
     Player comp;    // Computer player object.
@@ -19,10 +19,10 @@ void uiEasyMode() {
     promptSecretCode(user);
 
     // Generate a code for the computer.
-    comp.secretCode = generateCode(EASY, comp);
+    comp.secretCode = generateCode(comp);
     cout << "[COMPUTER] Computer has generated its own secret code." << endl << endl;
 
-    initGame(user, comp, MANUAL);
+    initGame(user, comp, EASY, MANUAL);
 
 }
 
@@ -42,7 +42,7 @@ void uiMediumMode() {
     promptSecretCode(user);
 
     // Generate a code for the computer.
-    comp.secretCode = generateCode(EASY, comp);
+    comp.secretCode = generateCode(comp);
     cout << "[COMPUTER] Computer has generated its own secret code." << endl << endl;
 
     do {
@@ -86,7 +86,7 @@ void uiMediumMode() {
 
     } while (inAskingMode);
 
-    initGame(user, comp, (ModeOfPlay)modeOfPlay);
+    initGame(user, comp, MEDIUM, (ModeOfPlay)modeOfPlay);
 
     usrGuessesFile.close();
 }
