@@ -1,11 +1,11 @@
 #include <iostream>
 
-#include "utils.h"
 #include "interface.h"
 
 int main() {
     bool keepUI = true;
     char command;
+
 
     do  {
         uiMainMenu();
@@ -20,9 +20,12 @@ int main() {
                 keepUI = false;
                 break;
             case MEDIUM_MODE:
-                // uiMediumMode(); -- not yet available in this version.
-                cout << "[UNAVAILABLE] This game mode is not yet available. Stay tuned in the next version." << endl;
+                uiMediumMode();
+                keepUI = false;
                 break;
+            case PRACTICE_MODE:
+                uiPracticeMode();
+                keepUI = false;
             case EXIT:
                 keepUI = false;
                 break;
