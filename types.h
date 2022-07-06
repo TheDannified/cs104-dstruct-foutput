@@ -12,6 +12,7 @@ using namespace std;
 typedef string Code;
 
 enum Difficulty {
+    PRACTICE,
     EASY,
     MEDIUM
 };
@@ -19,6 +20,7 @@ enum Difficulty {
 enum Commands {
     EASY_MODE = 'E',
     MEDIUM_MODE = 'M',
+    PRACTICE_MODE = 'P',
     EXIT = 'X'
 };
 
@@ -33,5 +35,9 @@ struct Player {
     bool isWinner;
 };
 
+struct Result {
+    short bulls;
+    short cows;
+};
 
 #endif //DSAFO_TYPES_H
