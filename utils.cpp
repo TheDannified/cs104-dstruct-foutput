@@ -17,6 +17,41 @@ bool isNumber(const char& ch)
     return false;
 }
 
+bool isAlpha(const char& ch)
+{
+    if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z'))
+        return true;
+
+    return false;
+}
+
+// IN DEVELOPMENT!
+string removeUsedDigits(string digits, Code& guessCode)
+{
+    for (char ch: guessCode)
+        digits.erase(remove(digits.begin(), digits.end(), ch), digits.end());
+
+    return digits;
+}
+
+// IN DEVELOPMENT!
+Code getHint(Code& guessCode, Code& secretCode)
+{
+    Code result;
+
+    for (char ch : guessCode)
+    {
+        if (isBull(guessCode, secretCode, ch))
+            result.append(1, ch);
+        else if (isCow(guessCode, secretCode, ch))
+            result.append(1, (char)(ch + 17));
+        else
+            result.append(1, '?');
+    }
+
+    return result;
+}
+
 // GOOD TO GO!
 bool validateCode(Code& code)
 {
@@ -41,6 +76,8 @@ string getDifficulty(Difficulty difficulty)
 {
     switch (difficulty)
     {
+        case PRACTICE:
+            return "PRACTICE";
         case EASY:
             return "EASY";
         case MEDIUM:
@@ -53,19 +90,20 @@ string getDifficulty(Difficulty difficulty)
 // GOOD TO GO!
 Code generateCode(Player& player)
 {
+    int randIndex;
     string digits;
     string result;
 
-    srand(time(0));
+    srand(time(NULL));
     do {
         result.clear();
         digits = "0123456789";
         for (int i = 0; i < MAX_CODE_LENGTH; i++) {
-            int randIndex = rand() % digits.length();
+            randIndex = rand() % digits.length();
             result.append(1, digits.at(randIndex));
             digits.erase(remove(digits.begin(), digits.end(), digits.at(randIndex)), digits.end());
         }
-    } while (hasPlayerUsedGuessCode(player, result));
+    } while (hasPlayerUsedGuessCode(player, result) || !validateCode(result));
 
     return result;
 }
@@ -73,30 +111,60 @@ Code generateCode(Player& player)
 // IN DEVELOPMENT
 Code generateCode(Player& player, Code& secretCode)
 {
+    int randIndex;
     string digits;
-    string result = "****";
+    string result;
+    Code hint;
+    Code prevGuessCode;
+    vector<char> cowDigits;
 
-    srand(time(0));
-    do {
-        result.clear();
-        digits = "0123456789";
-        for (int i = 0; i < MAX_CODE_LENGTH; i++) {
-            int randIndex = rand() % digits.length();
-            result.append(1, digits.at(randIndex));
-            digits.erase(remove(digits.begin(), digits.end(), digits.at(randIndex)), digits.end());
-        }
-    } while (hasPlayerUsedGuessCode(player, result));
+    srand(time(NULL));
+
+    if (!player.guesses.empty()) {
+        prevGuessCode = player.guesses.at(player.guesses.size() - 1);
+        hint = getHint(prevGuessCode, secretCode); // get hints from user's secret code.
+
+        do {
+            result.clear();
+            digits = removeUsedDigits("0123456789", secretCode);
+            for (int i = 0; i < MAX_CODE_LENGTH; i++) {
+                if (isNumber(hint[i])) // A 'bull' number
+                    result.append(1, prevGuessCode[i]);
+                else if (isAlpha(hint[i])) { // A 'cow' (possible) number
+                    cowDigits.push_back((char)(hint[i] - 17));
+                    hint.replace(i, 1, "#");
+                }
+                else if (hint.at(i) == '?') { // Just a random number
+                    randIndex = rand() % digits.length();
+                    result.append(1, digits.at(randIndex));
+                    digits.erase(remove(digits.begin(), digits.end(), digits.at(randIndex)), digits.end());
+                }
+            }
+
+            if (!cowDigits.empty()) {
+                if (cowDigits.size() == 1)
+                    hint[hint.find('#')] = cowDigits.at(0);
+                else {
+                    do {
+                        randIndex = rand() % cowDigits.size();
+                        hint[hint.find('#')] = cowDigits.at(randIndex);
+                        cowDigits.erase(remove(cowDigits.begin(), cowDigits.end(), cowDigits.at(randIndex)), cowDigits.end());
+                    } while (!cowDigits.empty());
+                }
+            }
+
+        } while (hasPlayerUsedGuessCode(player, result) || !validateCode(result));
+    }
+    else
+        result = generateCode(player);
 
     return result;
 }
 
 // GOOD TO GO!
-map<string, int> evaluateCode(const Code& guessCode, const Code& secretCode)
+Result evaluateCode(const Code& guessCode, const Code& secretCode)
 {
-    map<string, int> result;
-
-    result.insert(pair<string, int>("bulls", 0));
-    result.insert(pair<string, int>("cows", 0));
+    Result result = {0, 0};
 
     for (char ch : guessCode) {
         int gcChPos = (int) guessCode.find(ch);
@@ -105,9 +173,9 @@ map<string, int> evaluateCode(const Code& guessCode, const Code& secretCode)
         if (gcChPos != -1 && scChPos != -1)
         {
             if (gcChPos == scChPos)
-                result["bulls"]++;
+                result.bulls++;
             else
-                result["cows"]++;
+                result.cows++;
         }
     }
 
@@ -169,11 +237,11 @@ void promptGuessCode(Player& player)
 }
 
 // GOOD TO GO!
-string printResult(map<string, int>& result)
+string printResult(Result& result)
 {
     stringstream message;
-    int numBulls = result["bulls"];
-    int numCows = result["cows"];
+    int numBulls = result.bulls;
+    int numCows = result.cows;
 
     message << numBulls << ((numBulls == 1) ? " bull, " : " bulls, ") << numCows << ((numCows == 1) ? " cow" : " cows");
     return message.str();
@@ -196,16 +264,18 @@ bool hasPlayerUsedGuessCode(Player& player, Code& guessCode)
 
 // GOOD TO GO
 void saveGameResult(Player& player1, Player& player2, Difficulty difficulty) {
-    time_t dateTime = time(nullptr);        // time object for file name
+    time_t dateTime = time(NULL);        // time object for file name
     stringstream fileName;  // stores the initial name of our log file
     ofstream logFile;       // output stream object for the log file
 
     string gameWinner;
-    map<string, int> result;
+    Result result = {0, 0};
 
     fileName << "outputtest.txt";
 
-    if ((player1.isWinner && player2.isWinner) || (!player1.isWinner && !player2.isWinner))
+    if (isPracticeMode(difficulty))
+        gameWinner = player1.isWinner ? "USER" : "NONE";
+    else if ((player1.isWinner && player2.isWinner) || (!player1.isWinner && !player2.isWinner))
         gameWinner = "DRAW";
     else if (player1.isWinner && !player2.isWinner)
         gameWinner = "USER";
@@ -222,13 +292,22 @@ void saveGameResult(Player& player1, Player& player2, Difficulty difficulty) {
         logFile << "***************************************************" << endl << endl;
 
         logFile << "***************** GAME  SESSION *******************" << endl;
-        logFile << "SECRET CODES: \tUSER: " << player1.secretCode << "\tCOMPUTER: " << player2.secretCode << endl << endl;
+        logFile << "SECRET CODES: " <<
+                    // IF THE GAME DIFFICULTY IS NOT IN PRACTICE MODE, PRINT THE USER'S SECRET CODE.
+                    (!isPracticeMode(difficulty) ? ("\tUSER: " + player1.secretCode) : "") <<
+                    "\tCOMPUTER: " << player2.secretCode << endl << endl;
+
         for (size_t i = 0; i < player1.guesses.size(); i++) {
             logFile << ">> GAME #" << i + 1 << endl;
             result = evaluateCode(player1.guesses.at(i), player2.secretCode);
             logFile << "USER GUESSED: " << player1.guesses.at(i) << " - scoring " << printResult(result) << endl;
-            result = evaluateCode(player2.guesses.at(i), player1.secretCode);
-            logFile << "COMPUTER GUESSED: " << player2.guesses.at(i) << " - scoring " << printResult(result) << endl << endl;
+            // CHECK IF THE GAME DIFFICULTY IS IN PRACTICE MODE. IF TRUE, DO NOT PRINT COMPUTER GUESSES.
+            if (!isPracticeMode(difficulty)){
+                result = evaluateCode(player2.guesses.at(i), player1.secretCode);
+                logFile << "COMPUTER GUESSED: " << player2.guesses.at(i) << " - scoring " << printResult(result) << endl << endl;
+            }
+            else
+                logFile << "COMPUTER'S SECRET CODE: " << player2.secretCode << endl << endl;
         }
     }
 
@@ -247,7 +326,7 @@ void initGame(Player& user, Player& comp, Difficulty difficulty, ModeOfPlay mode
     Code userGuess;             // Stores the most recent guess code of the "user" player
     Code compGuess;             // Stores the most recent guess code of the "comp" player
 
-    map<string, int> result;    // guess evaluate tracker.
+    Result result = {0, 0};    // guess evaluate tracker.
 
     if (modeOfPlay == AUTOMATIC) {/* empty for now */};
 
@@ -261,10 +340,12 @@ void initGame(Player& user, Player& comp, Difficulty difficulty, ModeOfPlay mode
         for (const Code& usrGuess : user.guesses)
             cout << usrGuess << " ";
         cout << endl;
-        cout << "COMP GUESSES: ";
-        for (const Code& cmpGuess : comp.guesses)
-            cout << cmpGuess << " ";
-        cout << endl;
+        if (!isPracticeMode(difficulty)){
+            cout << "COMP GUESSES: ";
+            for (const Code &cmpGuess: comp.guesses)
+                cout << cmpGuess << " ";
+            cout << endl;
+        }
         cout << "*************************************************" << endl;
 
         // Prompt the user to guess the computer's secret code.
@@ -273,17 +354,31 @@ void initGame(Player& user, Player& comp, Difficulty difficulty, ModeOfPlay mode
         result = evaluateCode(userGuess, comp.secretCode);
         cout << "USER'S RESULT: " << printResult(result) << endl;
 
-        // Generate a code for the computer.
-        compGuess = generateCode(comp);
-        comp.guesses.push_back(compGuess);
-        result = evaluateCode(compGuess, user.secretCode);
-        cout << "COMPUTER GUESS: " << compGuess << endl;
-        cout << "COMPUTER'S RESULT: " << printResult(result) << endl;
+        if (!isPracticeMode(difficulty)) {
+            // Generate a code for the computer.
+            compGuess = (difficulty == EASY) ? generateCode(comp) : generateCode(comp, user.secretCode);
+            comp.guesses.push_back(compGuess);
+            result = evaluateCode(compGuess, user.secretCode);
+            cout << "COMPUTER GUESS: " << compGuess << endl;
+            cout << "COMPUTER'S RESULT: " << printResult(result) << endl;
+        }
 
         cout << "*************************************************" << endl;
 
+        if (isPracticeMode(difficulty)) {
+            if (hasGuessedSecretCode(userGuess, comp.secretCode)){
+                user.isWinner = true;
+                isInGame = false;
+
+                cout << "***************** GAME  SUMMARY *****************" << endl;
+                cout << "[GAME] The USER has guessed the COMPUTER's secret code!" << endl;
+                cout << "User's Last Guess: " << userGuess << endl;
+                cout << "Computer's Secret Code: " << comp.secretCode << endl;
+                cout << "*************************************************" << endl;
+            }
+        }
         // CHECK IF THE USER AND COMPUTER WERE ABLE TO GUESS EACH OTHER'S SECRET CODE
-        if (hasGuessedSecretCode(userGuess, comp.secretCode) && hasGuessedSecretCode(compGuess, user.secretCode))
+        else if (hasGuessedSecretCode(userGuess, comp.secretCode) && hasGuessedSecretCode(compGuess, user.secretCode))
         {
             cout << "***************** GAME  SUMMARY *****************" << endl;
             cout << "[GAME] It's a draw! No one guessed each other's secret code!"  << endl;
@@ -297,7 +392,6 @@ void initGame(Player& user, Player& comp, Difficulty difficulty, ModeOfPlay mode
         else if (hasGuessedSecretCode(userGuess, comp.secretCode))
         {
             user.isWinner = true;
-            comp.isWinner = false;
             isInGame = false;
 
             cout << "***************** GAME  SUMMARY *****************" << endl;
@@ -310,7 +404,6 @@ void initGame(Player& user, Player& comp, Difficulty difficulty, ModeOfPlay mode
         else if (hasGuessedSecretCode(compGuess, user.secretCode))
         {
             comp.isWinner = true;
-            user.isWinner = false;
             isInGame = false;
 
             cout << "***************** GAME  SUMMARY *****************" << endl;
@@ -324,7 +417,15 @@ void initGame(Player& user, Player& comp, Difficulty difficulty, ModeOfPlay mode
     } while (user.guesses.size() != MAX_GUESS_ATTEMPTS && isInGame);
 
     // IF NONE OF THE PLAYERS WERE ABLE TO GUESS ONE ANOTHER'S CODE...
-    if (!user.isWinner && !comp.isWinner)
+    if (isPracticeMode(difficulty) && !user.isWinner)
+    {
+        cout << "***************** GAME  SUMMARY *****************" << endl;
+        cout << "[GAME] The USER failed to guess the COMPUTER'S secret code!" << endl;
+        cout << "User's Last Guess: " << userGuess << endl;
+        cout << "Computer's Secret Code: " << comp.secretCode << endl;
+        cout << "*************************************************" << endl;
+    }
+    else if (!user.isWinner && !comp.isWinner)
     {
         cout << "***************** GAME  SUMMARY *****************" << endl;
         cout << "[GAME] It's a draw! No one guessed each other's secret code!"  << endl;
@@ -336,6 +437,11 @@ void initGame(Player& user, Player& comp, Difficulty difficulty, ModeOfPlay mode
     }
 
     saveGameResult(user, comp, difficulty);
+}
+
+bool isPracticeMode(Difficulty difficulty)
+{
+    return difficulty == PRACTICE;
 }
 
 // GOOD TO GO

@@ -31,6 +31,29 @@ void clear();
 bool isNumber(const char& ch);
 
 /**
+ * isAlpha checks if a given character is an alphabet. (case-insensitive)
+ * @param ch - the character
+ * @return
+ */
+bool isAlpha(const char& ch);
+
+/**
+ *
+ * @param string
+ * @param guessCode
+ * @return
+ */
+string removeUsedDigits(string string, Code& guessCode);
+
+/**
+ *
+ * @param guessCode
+ * @param secretCode
+ * @return
+ */
+Code getHint(Code& guessCode, Code& secretCode);
+
+/**
  * validateCode evaluates a given code if it follows the criteria that a guess code must have: <br />
  * - each character is a number digit; and <br />
  * - each digit is unique from other digits.
@@ -71,7 +94,7 @@ Code generateCode(Player& player, Code& secretCode);
  * @param secretCode - a player's secret guessCode
  * @return a map that contains "bulls" and "cows" elements with their respective counts
  */
-map<string, int> evaluateCode(const Code& guessCode, const Code& secretCode);
+Result evaluateCode(const Code& guessCode, const Code& secretCode);
 
 /**
  * promptSecretCode prompts the user to give out their own secret code.
@@ -91,10 +114,10 @@ void promptGuessCode(Player& player);
  * printResult produces a "bulls and cows" message result based on its findings from
  * evaluating a guess code.
  * This is only used after evaluateCode function has been invoked in a variable.
- * @param result - a result of Map type
- * @return
+ * @param result - the outcome of evaluated guess code.
+ * @return the string message of the outcome.
  */
-string printResult(map<string, int>& result);
+string printResult(Result& result);
 
 /**
  * hasGuessedSecretCode evaluates if both guessCode and secretCode is exactly the same.
@@ -127,6 +150,14 @@ void saveGameResult(Player& player1, Player& player2, Difficulty difficulty);
  * @param modeOfPlay - how to play the game
  */
 void initGame(Player& user, Player& comp, Difficulty difficulty, ModeOfPlay modeOfPlay);
+
+/**
+ * isPracticeMode checks if the difficulty of the game session is in Practice Mode.
+ * It restricts the computer to play against the player.
+ * @param difficulty - game difficulty
+ * @return
+ */
+bool isPracticeMode(Difficulty difficulty);
 
 /**
  * isBull checks if the position of a digit from the guessCode is exactly the same
