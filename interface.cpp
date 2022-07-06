@@ -4,9 +4,10 @@
 void uiMainMenu() {
     cout << "======== BULLS 'N COWS ========" << endl;
     cout << " Choose a difficulty mode: " << endl;
-    cout << " [E] Easy      [M] Medium  " << endl << endl;
+    cout << " [E] Easy      [M] Medium  " << endl;
+    cout << "      [P] Practice         " << endl << endl;
     cout << "      [X] Close Game" << endl;
-    cout << "=========== ver 1.0 ===========" << endl;
+    cout << "=========== ver 1.5 ===========" << endl;
     cout << endl << "COMMAND: ";
 }
 
@@ -86,7 +87,21 @@ void uiMediumMode() {
 
     } while (inAskingMode);
 
-    initGame(user, comp, MEDIUM, (ModeOfPlay)modeOfPlay);
-
+    // Close the streamline after using the file.
     usrGuessesFile.close();
+
+    // Then, proceed to launching the game.
+    initGame(user, comp, MEDIUM, (ModeOfPlay)modeOfPlay);
+}
+
+void uiPracticeMode() {
+    Player user;
+    Player comp;
+
+    cout << "======== BULLS 'n COWS ========" << endl;
+    cout << "[GAME] Difficulty set to Practice Mode." << endl << endl;
+    comp.secretCode = generateCode(comp);
+    cout << "[COMPUTER] Computer has generated its own secret code." << endl << endl;
+
+    initGame(user, comp, PRACTICE, MANUAL);
 }

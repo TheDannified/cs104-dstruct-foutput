@@ -13,5 +13,6 @@ using namespace std;
 void uiMainMenu();
 void uiEasyMode();
 void uiMediumMode();
+void uiPracticeMode();
 
 #endif //DSAFO_INTERFACE_H
