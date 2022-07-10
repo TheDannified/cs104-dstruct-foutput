@@ -11,7 +11,6 @@ void uiMainMenu() {
     cout << endl << "COMMAND: ";
 }
 
-// GOOD TO GO!
 void uiEasyMode() {
     Player user;    // User player object.
     Player comp;    // Computer player object.
@@ -27,7 +26,6 @@ void uiEasyMode() {
 
 }
 
-// IN DEVELOPMENT
 void uiMediumMode() {
     fstream usrGuessesFile;     // fstream object that is responsible for handling our external (text) file
     stringstream UGF_fileName;  // stringstream object that stores the name of the usrGuessesFile (UGF)
@@ -36,6 +34,9 @@ void uiMediumMode() {
 
     Player user;                // User player object
     Player comp;                // Computer player object
+
+    string tmpStr;              // only a temporary string
+    Code tmpCode;               // only a temporary Code reader
 
     char modeOfPlay;            // Stores the game setting of "how to play the medium game mode"
 
@@ -62,8 +63,6 @@ void uiMediumMode() {
                 break;
             case AUTOMATIC:
                 do {
-                    string tmpStr; // only a temporary string
-
                     // PROMPT USER TO PROVIDE THE NAME OF THEIR TEXT FILE THAT CONTAINS THEIR GUESS CODE
                     cout << "[GAME] Please provide the name (or path) of your text file that contains your guess code: ";
                     cin >> tmpStr;
@@ -76,15 +75,23 @@ void uiMediumMode() {
                         while (getline(UGF_fileName, tmpStr, '\\'));
 
                         cout << "[GAME] " << tmpStr << " has been loaded to the game system successfully." << endl << endl;
+
+                        while(getline(usrGuessesFile, tmpCode) && user.guesses.size() != MAX_GUESS_ATTEMPTS) {
+                            if (!(tmpCode.starts_with('#') || !validateCode(tmpCode) || hasPlayerUsedGuessCode(user, tmpCode)))
+                                user.guesses.push_back(tmpCode);
+                        }
+
                         inAskingMode = false;
                     }
 
                 } while (inAskingMode);
+
+                cout << "[SUCCESS] The first " << user.guesses.size() << " valid guess(es) were read from " << tmpStr << " file." << endl;
+
                 break;
             default:
                 cerr << "[ERROR] Invalid argument! Please try again." << endl;
         }
-
     } while (inAskingMode);
 
     // Close the streamline after using the file.
@@ -104,4 +111,56 @@ void uiPracticeMode() {
     cout << "[COMPUTER] Computer has generated its own secret code." << endl << endl;
 
     initGame(user, comp, PRACTICE, MANUAL);
+}
+
+void promptSecretCode(Player& player)
+{
+    string userCode;
+
+    do {
+
+        cout << "[USER] Please provide a secret code: ";
+        cin >> userCode;
+
+        if (userCode.length() < MAX_CODE_LENGTH)
+            cerr << "[ERROR] Given code has less than " << MAX_CODE_LENGTH << " characters. Please try again." << endl;
+        else if (userCode.length() > MAX_CODE_LENGTH)
+            cerr << "[ERROR] Given code has more than " << MAX_CODE_LENGTH << " characters. Please try again." << endl;
+        else if (!validateCode(userCode))
+            cerr << "[ERROR] Given code is invalid. Please provide a code that has 4 distinct number code." << endl;
+        else
+            player.secretCode = userCode;
+
+    } while (userCode.length() != 4 || !validateCode(userCode));
+}
+
+void promptGuessCode(Player& player)
+{
+    string userCode;
+
+    do {
+        // PROMPT THE USER TO ENTER THEIR OWN GUESS
+        cout << "YOUR GUESS: ";
+        cin >> userCode;
+
+        // IF THE GIVEN CODE HAS LESS THAN 4 CHARACTERS...
+        if (userCode.length() < MAX_CODE_LENGTH)
+            cerr << "[ERROR] Given code has less than " << MAX_CODE_LENGTH << " characters. Please try again." << endl;
+            // IF THE GIVEN CODE EXCEEDED THE CHARACTER LIMIT
+        else if (userCode.length() > MAX_CODE_LENGTH)
+            cerr << "[ERROR] Given code has more than " << MAX_CODE_LENGTH << " characters. Please try again." << endl;
+            // IF THE GIVEN CODE VIOLATES OUR CODE STANDARDS
+        else if (!validateCode(userCode))
+            cerr << "[ERROR] Given code is invalid. Please provide a code that has 4 distinct number code." << endl;
+            // IF THE USER ALREADY USED THE GIVEN CODE FROM THEIR PREVIOUS ATTEMPTS
+        else if (hasPlayerUsedGuessCode(player, userCode)) {
+            cerr << "[ERROR] You have guessed this code from your previous attempts. Please provide another unique code." << endl;
+            userCode = "";
+        }
+            // IF THE GIVEN CODE IS OKAY
+        else
+            player.guesses.push_back(userCode);
+
+        // CHECK IF THE USERCODE'S LENGTH IS NOT 4 OR THE CODE STANDARD IS VIOLATED...
+    } while (userCode.length() != 4 || !validateCode(userCode));
 }
