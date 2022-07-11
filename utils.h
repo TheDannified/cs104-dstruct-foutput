@@ -19,42 +19,51 @@
 using namespace std;
 
 /**
- * clear "clears" the entire CLI's messages.
- */
-void clear();
-
-/**
  * isNumber checks if a given character is a number.
  * @param ch - the character
- * @return
+ * @returns true if the character is a number character. Otherwise, false.
  */
 bool isNumber(const char& ch);
 
 /**
  * isAlpha checks if a given character is an alphabet. (case-insensitive)
  * @param ch - the character
- * @return
+ * @return true if the character is an alphabet character. Otherwise, false.
  */
 bool isAlpha(const char& ch);
 
 /**
- *
- * @param string
- * @param guessCode
- * @return
+ * isFalseDigit checks if a given character is a question mark (or a false digit) character.
+ * @param ch - the character
+ * @return true if the character is a question mark. Otherwise, false.
+ */
+bool isFalseDigit(const char& ch);
+
+/**
+ * removeUsedDigits removes the number characters that were used in a player's recent guess code.
+ * @param string - the reference string
+ * @param guessCode - the player's guess code
+ * @return a modified reference string
  */
 string removeUsedDigits(string string, Code& guessCode);
 
 /**
- *
- * @param guessCode
- * @param secretCode
- * @return
+ * getHint produces a hint code that contains symbols that represent bulls, cows, and false digits
+ * in each index position, provided with a player's guess code and their opponent's secret code to
+ * evaluate and compare both codes of their similarities and dissimilarities in form. <br /> <br />
+ * For symbols context: <br />
+ * <strong><code>0-9</code></strong> represent <strong>bull</strong> digits, <br />
+ * <strong><code>A-J</code></strong> represent <strong>cow</strong> digits, <br />
+ * <strong><code>?</code></strong> presents <strong>false</strong> digits (or digits that were not found in the secret code)
+ * @param guessCode - a player's guess code
+ * @param secretCode - a player's secret code
+ * @return a hint code
  */
 Code getHint(Code& guessCode, Code& secretCode);
 
 /**
  * validateCode evaluates a given code if it follows the criteria that a guess code must have: <br />
+ * - given code has exactly 4 characters <br />
  * - each character is a number digit; and <br />
  * - each digit is unique from other digits.
  * @param code - an array of 4 characters
@@ -63,28 +72,35 @@ Code getHint(Code& guessCode, Code& secretCode);
 bool validateCode(Code &code);
 
 /**
- * getDifficulty returns...
- * @param difficulty
+ * getDifficulty returns the string representation of a Difficulty enum constant
+ * @param difficulty - a difficulty constant
  * @return a string version of a Difficulty
  */
 string getDifficulty(Difficulty difficulty);
 
 /**
+ * shiftPosition is responsible for shifting the positions of a hint code to make the computer generate a guess code that
+ * is relatively close from its previous guess codes and to its opponent's secret code. Its default shifting direction is
+ * in a right (->) direction and is done only once.
+ * @param hint - a hint code
+ * @return a hint code with its characters shifted to the right
+ */
+Code shiftPosition(Code& hint);
+
+/**
  * generateCode returns a 4-character string of Code type.
  * @param player - the target player
  * @return a string of generated Code
  */
-// FOR EASY MODE
 Code generateCode(Player& player);
 
 /**
  * generateCode returns a 4-character string of Code type.
- * This overloaded function is specifically designed for Medium AI.
+ * (This overloaded function is specifically designed for Medium AI.)
  * @param player - the target player
  * @param secretCode - given secret code
  * @return a string of generated Code
  */
-// FOR MEDIUM MODE
 Code generateCode(Player& player, Code& secretCode);
 
 /**
@@ -95,20 +111,6 @@ Code generateCode(Player& player, Code& secretCode);
  * @return a map that contains "bulls" and "cows" elements with their respective counts
  */
 Result evaluateCode(const Code& guessCode, const Code& secretCode);
-
-/**
- * promptSecretCode prompts the user to give out their own secret code.
- * This is specifically designed for human players to interact with the program.
- * @param player - the target player
- */
-void promptSecretCode(Player& player);
-
-/**
- * promptGuessCode prompts the user to give out their own guess code.
- * This is specifically design for human players to interact with the program.
- * @param player - the target player
- */
-void promptGuessCode(Player& player);
 
 /**
  * printResult produces a "bulls and cows" message result based on its findings from
@@ -141,7 +143,7 @@ bool hasPlayerUsedGuessCode(Player& player, Code& guessCode);
  * @param player1 - a target Player (user)
  * @param player2 - a target Player (computer)
  */
-void saveGameResult(Player& player1, Player& player2, Difficulty difficulty);
+void saveGameResult(Player& player1, Player& player2, Difficulty difficulty, const string& filename);
 
 /**
  * initGame initializes the game.
@@ -155,27 +157,27 @@ void initGame(Player& user, Player& comp, Difficulty difficulty, ModeOfPlay mode
  * isPracticeMode checks if the difficulty of the game session is in Practice Mode.
  * It restricts the computer to play against the player.
  * @param difficulty - game difficulty
- * @return
+ * @return true if the game difficulty is equal to PRACTICE constant of Difficulty enum.
  */
 bool isPracticeMode(Difficulty difficulty);
 
 /**
  * isBull checks if the position of a digit from the guessCode is exactly the same
  * as the position of that digit from the secretCode
- * @param ch - a number digit character
  * @param guessCode - a player's guess code
  * @param secretCode - player opponent's secret code
- * @return
+ * @param ch - a number digit character
+ * @return true if the given character is a bull digit on both guessCode and secretCode
  */
 bool isBull(Code& guessCode, Code& secretCode, char ch);
 
 /**
  * isCow checks if a digit from both guessCode and secretCode does exist
  * but are different in indexes from each given codes.
- * @param ch - a number digit character
  * @param guessCode - a player's guess code
  * @param secretCode - player opponent's secret code
- * @return
+ * @param ch - a number digit character
+ * @return true if the given character is found in a cow digit on guessCode
  */
 bool isCow(Code& guessCode, Code& secretCode, char ch);
 
