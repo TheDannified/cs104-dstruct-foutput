@@ -6,7 +6,6 @@ int main() {
     bool keepUI = true;
     char command;
 
-
     do  {
         uiMainMenu();
 
@@ -17,15 +16,13 @@ int main() {
         {
             case EASY_MODE:
                 uiEasyMode();
-                keepUI = false;
                 break;
             case MEDIUM_MODE:
                 uiMediumMode();
-                keepUI = false;
                 break;
             case PRACTICE_MODE:
                 uiPracticeMode();
-                keepUI = false;
+                break;
             case EXIT:
                 keepUI = false;
                 break;
@@ -34,8 +31,6 @@ int main() {
         }
         cout << endl;
     } while (keepUI);
-
-    system("pause > 0");
 
     return EXIT_SUCCESS;
 }
