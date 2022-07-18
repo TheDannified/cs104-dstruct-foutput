@@ -136,8 +136,14 @@ Code shiftPosition(Code& hint) {
                     if (isAlpha(hint[j]) || isFalseDigit(hint[j])) {
                         result[j] = hint[i];
                         if (j == 0) {
-                            if (isAlpha(result[MAX_CODE_LENGTH - 1]))
-                                result[MAX_CODE_LENGTH - 1] = '?';
+                            if (isAlpha(result[MAX_CODE_LENGTH - 1])) {
+                                if (isAlpha(hint[MAX_CODE_LENGTH - 1])) {
+                                    break;
+                                }
+                                else if (isFalseDigit(result[MAX_CODE_LENGTH - 1])) {
+                                    result[MAX_CODE_LENGTH - 1] = '?';
+                                }
+                            }
                             else if (isFalseDigit(result[MAX_CODE_LENGTH - 1]))
                                 break;
                             else
@@ -161,7 +167,7 @@ Code shiftPosition(Code& hint) {
                         }
                     }
                 else if (isNumber(hint[i - 1])) {
-                    if (!isNumber(hint[i + 1]))
+                    if (isNumber(hint[i + 1]))
                         result[i + 2] = hint[i];
                     else
                         continue;
@@ -443,6 +449,10 @@ void initGame(Player& user, Player& comp, Difficulty difficulty, ModeOfPlay mode
             // CHECK IF THE USER AND COMPUTER WERE ABLE TO GUESS EACH OTHER'S SECRET CODE
         else if (hasGuessedSecretCode(userGuess, comp.secretCode) && hasGuessedSecretCode(compGuess, user.secretCode))
         {
+            user.isWinner = true;
+            comp.isWinner = true;
+            isInGame = false;
+
             cout << "***************** GAME  SUMMARY *****************" << endl;
             cout << "[GAME] It's a draw! Both player were able to guess each other's secret code!"  << endl;
             cout << "User's Last Guess: " << userGuess << endl;
