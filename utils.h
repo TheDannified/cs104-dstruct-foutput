@@ -142,6 +142,8 @@ bool hasPlayerUsedGuessCode(Player& player, Code& guessCode);
  * saveGameResult creates an output file that contains the entire log of its game session
  * @param player1 - a target Player (user)
  * @param player2 - a target Player (computer)
+ * @param difficulty - the game difficulty
+ * @param filename - the desired file name of the output text file
  */
 void saveGameResult(Player& player1, Player& player2, Difficulty difficulty, const string& filename);
 
@@ -149,6 +151,7 @@ void saveGameResult(Player& player1, Player& player2, Difficulty difficulty, con
  * initGame initializes the game.
  * @param user - the user player.
  * @param comp - the comp player.
+ * @param difficulty - the game difficulty
  * @param modeOfPlay - how to play the game
  */
 void initGame(Player& user, Player& comp, Difficulty difficulty, ModeOfPlay modeOfPlay);

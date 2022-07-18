@@ -160,8 +160,12 @@ Code shiftPosition(Code& hint) {
                             break;
                         }
                     }
-                else if (isNumber(hint[i - 1]))
-                    result[i + 2] = hint[i];
+                else if (isNumber(hint[i - 1])) {
+                    if (!isNumber(hint[i + 1]))
+                        result[i + 2] = hint[i];
+                    else
+                        continue;
+                }
                 else if (isNumber(hint[i + 1]))
                     result[i - 2] = hint[i];
                 else
