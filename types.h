@@ -8,7 +8,8 @@
 #define MAX_GUESS_ATTEMPTS 7
 #define DEFAULT_FILE_EXTENSION ".txt"
 
-using namespace std;
+using   std::vector
+        , std::string;
 
 typedef string Code;
 
@@ -58,7 +59,8 @@ public:
  * Result - a structure that contains the information of an evaluated guess code after being compared
  *          to a player's secret code.
  * It consists of these following attributes:
- * @param bulls -
+ * @attributes bulls - the number of matching digits in their right positions,
+ * @attributes cows - the number of matching digits but in different positions
  */
 struct Result {
     short bulls;
