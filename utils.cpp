@@ -167,8 +167,12 @@ Code shiftPosition(Code& hint) {
                         }
                     }
                 else if (isNumber(hint[i - 1])) {
-                    if (isNumber(hint[i + 1]))
-                        result[i + 2] = hint[i];
+                    if (isNumber(hint[i + 1])) {
+                        if (!isNumber(result[i + 2]))
+                            result[i + 2] = hint[i];
+                        else
+                            continue;
+                    }
                     else
                         continue;
                 }
